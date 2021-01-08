@@ -40,7 +40,6 @@ grp = int(input('Enter group number:'))
 passwd = getpass('Enter password: ')
 # getting list of correct nicknames
 nicks = getnicks(passwd)
-print(nicks)
 # list of all images in directory
 files = os.listdir('img')
 datas = list()
