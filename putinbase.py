@@ -53,9 +53,9 @@ def getnicks(passwd):
     return nicks
 
 
-def writebase(datas, grp):
+def writebase(datas, grp, passwd):
     # connect to base
-    passwd = getpass("Enter password:", )
+    # passwd = getpass("Enter password:", )
     connection = psycopg2.connect(dbname="TWD", user="postgres", password=passwd, host="188.120.240.167")
     cursor = connection.cursor()
     i = input('Enter "1" for current date or "2" for custom: ')

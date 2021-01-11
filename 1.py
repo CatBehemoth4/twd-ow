@@ -197,7 +197,7 @@ for fname in files:
 
 # write to destination base on server if all nicks are recognized
 if not nickempty and not noneflag:
-    writebase(datas, grp)
+    writebase(datas, grp, passwd)
 elif nickempty:
     print('There are empty unrecognized nicks in the list')
 else:
