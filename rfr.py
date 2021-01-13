@@ -3,10 +3,10 @@ from flask import Flask, make_response, request
 from getpass import getpass
 from putinbase import BASELIST
 
-app = Flask('rfr')
+app = Flask(__name__)
 
 def baseconnect(passwd):
-    connection = psycopg2.connect(dbname="TWD", user="bormaglot", password=passwd, host="188.120.240.167")
+    connection = psycopg2.connect(dbname="TWD", user="bormaglot", password='123', host="188.120.240.167")
     cursor = connection.cursor()
     return cursor, connection
 
@@ -30,7 +30,7 @@ def arq(req):
         a = json.loads(request.data)
         # season list requested (a[0] = 1)
         if a[0] == 1:
-            cur, conn = baseconnect(passw)
+            cur, conn = baseconnect('123')
         # taking all season's table from server
             cur.execute('SELECT * FROM "seasons" ORDER BY "Id" DESC')
             seasons = cur.fetchall()
@@ -133,14 +133,26 @@ def arq(req):
         # making json
             ret = json.dumps(resTable)
             conn.close()
+        # requested possible weeks of players
+        if a[0] == 4:
+            cur, conn = baseconnect(passw)
+            cur.execute('SELECT "Id" FROM "players" WHERE "Name" = \'%s\'' % a[1])
+            idUsr = cur.fetchall()[0][0]
+            print(a[1], idUsr)
+            cur.execute('SELECT * FROM "teams" WHERE "player" = \'%s\'' % idUsr)
+            dats = cur.fetchall()
+            colmns = [desc[0] for desc in cur.description]
     # send the respective json to requester
     resp = make_response(ret)
     resp.status_code = 200
     # two attributes below added to availability of localhost running both client and server
     resp.headers['Access-Control-Allow-Origin'] = '*'
     resp.headers['Access-Control-Allow-Headers'] = '*'
+    resp.headers['Access-Control-Allow-Methods'] = 'POST'
     resp.mimetype = 'application/json'
     return resp
 
-passw = getpass('Enter password:')
-app.run(debug=True)#
+
+passw = '123'
+if __name__ == "__main__":
+    app.run(debug=True)

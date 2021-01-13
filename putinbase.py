@@ -154,3 +154,18 @@ def datemove():
     connection.commit()
     cursor.close()
     connection.close()
+
+
+def deletecolumn():
+
+    passwd = getpass("Enter password:", )
+    connection = psycopg2.connect(dbname="TWD", user="postgres", password=passwd, host="188.120.240.167")
+    cursor = connection.cursor()
+    deldate = input('Enter date to exclude in format "YYYY-MM-DD": ')
+
+    for base in BASELIST:
+        cursor.execute('ALTER TABLE "%s" DROP COLUMN "%s"' % (base, deldate))
+    cursor.execute('ALTER TABLE "teams" DROP COLUMN "%s"' % deldate)
+    connection.commit()
+    cursor.close()
+    connection.close()

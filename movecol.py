@@ -1,3 +1,3 @@
 import putinbase
 
-putinbase.datemove()
+pass
