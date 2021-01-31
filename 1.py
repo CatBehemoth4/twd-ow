@@ -1,7 +1,7 @@
 from PIL import Image, ImageFilter
 import pytesseract
 from xlmodule import returnnicks, putinxl
-from putinbase import writebase, getnicks
+from putinbase import writebase, getnicks, newNick
 from getpass import getpass
 import os
 
@@ -64,12 +64,16 @@ for fname in files:
     # reveal nick in image
     nickr = pytesseract.image_to_string(imagesmall, lang='rus')
     nickr = nickr[:len(nickr)-2]
+    nickr1 = nickr
     nicke = pytesseract.image_to_string(imagesmall)
     nicke = nicke[:len(nicke)-2]
+    nicke1 = nicke
     nickt = pytesseract.image_to_string(imagesmall, lang='twn')
     nickt = nickt[:len(nickt)-2]
+    nickt1 = nickt
     nickg = pytesseract.image_to_string(imagesmall, lang='deu')
     nickg = nickg[:len(nickt)]
+    nickg1 = nickg
     if nickr == 'Сержз110':
         nickr = 'Серж3110'
     if nickt[:4:] == 'Kast':
@@ -82,6 +86,7 @@ for fname in files:
         nick = nickt
     elif nickg in nicks:
         nick = nickg
+
     else:
         nickr = pytesseract.image_to_string(imagesmall1, lang='rus')
         nickr = nickr[:len(nickr) - 2]
@@ -110,14 +115,6 @@ for fname in files:
                 nick = nickt
             else:
                 nick = ''
-
-    # if nick[-5::] == ' EDIT' or nick[-5::] == ' EDlт':
-    #     nick = nick[:-5:]
-    # if nick[:2:] == 'ma':
-    #     nick = 'Ooo'
-    # nickq = input('Current nick is ' + nick + '. Enter correct nick or hit "enter" to unchange')
-    # if nickq != '':
-    #     nick = nickq
 
     # select fragments of stat data
     wkim = imagebig1.crop((22, 7, 260, 63))
@@ -183,10 +180,6 @@ for fname in files:
         lv = int(pytesseract.image_to_string(lvim))
     except:
         lv = unrecnumb('"Level"', nick, fname)
-        # if nick == 'Remark 777':
-        #     lv = 14
-        # else:
-        #     lv = 7
     datas.append([nick, wk, rd, mp, mc, sf, sc, ph, pw, cc, sr, lv])
     if None in datas[len(datas) - 1]:
         noneflag = True
@@ -194,6 +187,17 @@ for fname in files:
     print(nick, wk, rd, mp, mc, sf, sc, ph, pw, cc, sr, lv)
     if nick == '':
         nickempty = True
+        print('Nick is not recognized as existed.')
+        print('Recognized variants are: %s, %s, %s, %s.' % (nicke1, nickr1, nickt1, nickg1))
+        newNck = input('Enter respective number or 0 for none: ')
+        ncks = (nicke1, nickr1, nickt1, nickg1)
+        if newNck != '0':
+            newNck = ncks[int(newNck) - 1]
+            newNick(newNck, passwd)
+            nickempty = False
+            nick = newNck
+            datas[len(datas) - 1][0] = nick
+
 
 # write to destination base on server if all nicks are recognized
 if not nickempty and not noneflag:

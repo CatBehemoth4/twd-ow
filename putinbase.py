@@ -5,6 +5,12 @@ BASELIST = ('walkers_killed', 'raiders_defeated', 'missions_played', 'missions_c
             'stash_collected', 'total_power_heroes', 'total_power_weapons', 'cards_collected',
             'survivors_rescued', 'level')
 
+def baseconnect(passwd):
+    connection = psycopg2.connect(dbname="TWD", user="postgres", password=passwd, host="188.120.240.167")
+    cursor = connection.cursor()
+    return cursor, connection
+
+
 
 def datmonthcheck(day, month, year):
     if month in {2, 4, 6, 9, 11}:
@@ -43,8 +49,7 @@ def chkdt(dat):
 
 
 def getnicks(passwd):
-    connection = psycopg2.connect(dbname="TWD", user="postgres", password=passwd, host="188.120.240.167")
-    cursor = connection.cursor()
+    cursor, connection = baseconnect(passwd)
     cursor.execute('SELECT "Name" FROM "players"')
     intmd = cursor.fetchall()
     nicks = list()
@@ -56,8 +61,7 @@ def getnicks(passwd):
 def writebase(datas, grp, passwd):
     # connect to base
     # passwd = getpass("Enter password:", )
-    connection = psycopg2.connect(dbname="TWD", user="postgres", password=passwd, host="188.120.240.167")
-    cursor = connection.cursor()
+    cursor, connection = baseconnect(passwd)
     i = input('Enter "1" for current date or "2" for custom: ')
     # getting current date
     flg = True
@@ -86,7 +90,7 @@ def writebase(datas, grp, passwd):
 
     # iterating by users in block and change nicks to playersID
     for i in range(len(datas)):
-        cursor.execute("""SELECT "Id", "Group" from "players" where "Name"='""" + datas[i][0] + "'")
+        cursor.execute("""SELECT "Id" from "players" where "Name"='""" + datas[i][0] + "'")
         Ids = cursor.fetchall()
         id = Ids[0][0]
 
@@ -113,10 +117,8 @@ def writebase(datas, grp, passwd):
     connection.close()
 
 
-def datemove():
-    passwd = getpass("Enter password:", )
-    connection = psycopg2.connect(dbname="TWD", user="postgres", password=passwd, host="188.120.240.167")
-    cursor = connection.cursor()
+def datemove(passwd):
+    cursor, connection = baseconnect(passwd)
     good = False
 
 # input dates
@@ -156,11 +158,8 @@ def datemove():
     connection.close()
 
 
-def deletecolumn():
-
-    passwd = getpass("Enter password:", )
-    connection = psycopg2.connect(dbname="TWD", user="postgres", password=passwd, host="188.120.240.167")
-    cursor = connection.cursor()
+def deletecolumn(passwd):
+    cursor, connection = baseconnect(passwd)
     deldate = input('Enter date to exclude in format "YYYY-MM-DD": ')
 
     for base in BASELIST:
@@ -168,4 +167,40 @@ def deletecolumn():
     cursor.execute('ALTER TABLE "teams" DROP COLUMN "%s"' % deldate)
     connection.commit()
     cursor.close()
+    connection.close()
+
+
+def newNick(nick, passwd):
+    cursor, connection = baseconnect(passwd)
+    cursor.execute('SELECT "Id" FROM "players"')
+    numbers = cursor.fetchall()
+    numbers = [num[0] for num in numbers]
+    numbers.sort(key= lambda x: x, reverse=True)
+    nickId = numbers[0] + 1
+    cursor.execute('INSERT INTO "players" ("Id", "Name") VALUES (%s, \'%s\')' % (nickId, nick))
+    connection.commit()
+    connection.close()
+
+
+def delNick(nick, passwd):
+    cursor, connection = baseconnect(passwd)
+    cursor.execute('SELECT * FROM "players"')
+    plrs = cursor.fetchall()
+    found = False
+    for player in plrs:
+        if player[1] == nick:
+            plrId = player[0]
+            found = True
+            break
+    if not found:
+        print('Player \'%s\' is not found in base.' % nick)
+    else:
+        for base in BASELIST:
+            cursor.execute('DELETE FROM "%s" WHERE "player" = %s' % (base, plrId))
+        cursor.execute('DELETE FROM "teams" WHERE "player" = %s' % plrId)
+        cursor.execute('DELETE FROM "players" WHERE "Id" = %s' % plrId)
+        q = input('Are you sure want to remove \'%s\' (%s) from base. It cannot de undone?' % (nick, plrId))
+        if q == 'y':
+            connection.commit()
+            print('Player \'%s\' has been removed from base.' % nick)
     connection.close()
