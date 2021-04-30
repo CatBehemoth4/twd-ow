@@ -50,11 +50,12 @@ def chkdt(dat):
 
 def getnicks(passwd):
     cursor, connection = baseconnect(passwd)
-    cursor.execute('SELECT "Name" FROM "players"')
+    cursor.execute('SELECT "Name", "Id" FROM "players"')
     intmd = cursor.fetchall()
     nicks = list()
     for rec in intmd:
-        nicks.append(rec[0])
+        rec = [rec[0], rec[1]]
+        nicks.append(rec)
     return nicks
 
 
@@ -90,26 +91,26 @@ def writebase(datas, grp, passwd):
 
     # iterating by users in block and change nicks to playersID
     for i in range(len(datas)):
-        cursor.execute("""SELECT "Id" from "players" where "Name"='""" + datas[i][0] + "'")
-        Ids = cursor.fetchall()
-        id = Ids[0][0]
+        # cursor.execute("""SELECT "Id" from "players" where "Name"='""" + datas[i][0] + "'")
+        # Ids = cursor.fetchall()
+        # id = Ids[0][0]
 
 # if new player - add him into tables
-        req = 'SELECT * FROM "walkers_killed" WHERE "player" = %s' % (id)
+        req = 'SELECT * FROM "walkers_killed" WHERE "player" = %s' % (datas[i][0])
         cursor.execute(req)
         isExist = cursor.fetchall()
         if not isExist:
             for base in BASELIST:
-                cursor.execute('INSERT INTO "%s" ("player") VALUES (%s)' % (base, id))
-            cursor.execute('INSERT INTO "teams" ("player") VALUES (%s)' % id)
+                cursor.execute('INSERT INTO "%s" ("player") VALUES (%s)' % (base, datas[i][0]))
+            cursor.execute('INSERT INTO "teams" ("player") VALUES (%s)' % datas[i][0])
 
 # update values in tables
         j = 1
         for base in BASELIST:
-            cursor.execute('UPDATE "%s" SET "%s" = %s WHERE "player" = %s' % (base, dat, datas[i][j], id))
+            cursor.execute('UPDATE "%s" SET "%s" = %s WHERE "player" = %s' % (base, dat, datas[i][j], datas[i][0]))
             j += 1
-        cursor.execute('UPDATE "teams" SET "%s" = %s WHERE "player" = %s' % (dat, grp, id))
-        print('Player %s (%s) updated.' % (datas[i][0], id))
+        cursor.execute('UPDATE "teams" SET "%s" = %s WHERE "player" = %s' % (dat, grp, datas[i][0]))
+        print('Player %s (%s) updated.' % (datas[i][12], datas[i][0]))
     n = int(input('Enter "1" to confirm recording:'))
     if n == 1:
         connection.commit()
@@ -180,6 +181,7 @@ def newNick(nick, passwd):
     cursor.execute('INSERT INTO "players" ("Id", "Name") VALUES (%s, \'%s\')' % (nickId, nick))
     connection.commit()
     connection.close()
+    return nickId
 
 
 def delNick(nick, passwd):

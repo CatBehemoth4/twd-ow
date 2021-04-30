@@ -39,7 +39,8 @@ grp = int(input('Enter group number:'))
 # enter password for root user
 passwd = getpass('Enter password: ')
 # getting list of correct nicknames
-nicks = getnicks(passwd)
+nicksAll = getnicks(passwd)
+nicks = [nk[0] for nk in nicksAll]
 # list of all images in directory
 files = os.listdir('img')
 datas = list()
@@ -50,18 +51,22 @@ for fname in files:
     fname = 'img' + "\\" + fname
     imagebig = Image.open(fname)
     # select fragment for stat numbers
-    imagesmall = imagebig.crop((390, 297, 808, 366))
+    imagesmall = imagebig.crop((392, 297, 808, 366))
     imagesmall1 = imagebig.crop((390, 297, 678, 366))
-    imagesmall2 = imagesmall
+    imagesmall2 = imagebig.crop((393, 310, 590, 357))
     imagesmall = negate(imagesmall)
     imagesmall1 = imagesmall1.filter(ImageFilter.EDGE_ENHANCE)
     imagesmall = imagesmall.filter(ImageFilter.EDGE_ENHANCE)
+    # imagesmall2 = imagesmall2.filter(ImageFilter.SHARPEN)
+    imagesmall2 = negate(imagesmall2)
+    imagesmall2 = imagesmall2.filter(ImageFilter.EDGE_ENHANCE)
     # imagesmall1 = negate(imagesmall1)
     # imagesmall1 = imagesmall1.filter(ImageFilter.EDGE_ENHANCE)
     # select fragment for nickname
     imagebig1 = imagebig.crop((174, 1317, 447, 2097))
     #imagebig1 = negate(imagebig1)
     # reveal nick in image
+    imagesmall.save('1.jpg')
     nickr = pytesseract.image_to_string(imagesmall, lang='rus')
     nickr = nickr[:len(nickr)-2]
     nickr1 = nickr
@@ -78,6 +83,8 @@ for fname in files:
         nickr = 'Серж3110'
     if nickt[:4:] == 'Kast':
         nickt = nospace(nickt)
+    if nicke[:6:] == 'Who am':
+        nicke = 'Who am I'
     if nickr in nicks:
         nick = nickr
     elif nicke in nicks:
@@ -115,22 +122,24 @@ for fname in files:
                 nick = nickt
             else:
                 nick = ''
+    if nick != '':
+        allPossiblePlayers = list()
+        for rec in nicksAll:
+            if nick == rec[0]:
+                allPossiblePlayers.append(rec)
+    imagesmall2.save('im1.jpg')
 
     # select fragments of stat data
     wkim = imagebig1.crop((22, 7, 260, 63))
     rdim = imagebig1.crop((28, 89, 260, 142))
-    rdim1 = imagebig1.crop((22, 89, 260, 142))
     mpim = imagebig1.crop((22, 166, 260, 218))  #22 166 260 218
     mcim = imagebig1.crop((22, 244, 260, 294))  #22 244 260 294
     sfim = imagebig1.crop((22, 323, 260, 376))
     scim = imagebig1.crop((28, 396, 260, 454))
-    scim1 = imagebig1.crop((20, 390, 260, 458))
     phim = imagebig1.crop((22, 478, 260, 532))
-    phim1 = imagebig1.crop((28, 478, 260, 532))
     pwim = imagebig1.crop((22, 555, 260, 606))
     ccim = imagebig1.crop((22, 632, 260, 689))
     srim = imagebig1.crop((28, 711, 260, 762))
-    srim1 = imagebig1.crop((32, 713, 260, 760))
     lvim = imagebig.crop((289, 287, 329, 323)) #.filter(ImageFilter.EDGE_ENHANCE_MORE)
 
     # rdim.save('rdim.jpg')
@@ -180,24 +189,47 @@ for fname in files:
         lv = int(pytesseract.image_to_string(lvim))
     except:
         lv = unrecnumb('"Level"', nick, fname)
-    datas.append([nick, wk, rd, mp, mc, sf, sc, ph, pw, cc, sr, lv])
+    datas.append([nick, wk, rd, mp, mc, sf, sc, ph, pw, cc, sr, lv, nick])
     if None in datas[len(datas) - 1]:
         noneflag = True
         break
     print(nick, wk, rd, mp, mc, sf, sc, ph, pw, cc, sr, lv)
     if nick == '':
-        nickempty = True
         print('Nick is not recognized as existed.')
         print('Recognized variants are: %s, %s, %s, %s.' % (nicke1, nickr1, nickt1, nickg1))
-        newNck = input('Enter respective number or 0 for none: ')
+        newNck = input('Enter respective number, 0 for none or 5 for manual add: ')
         ncks = (nicke1, nickr1, nickt1, nickg1)
-        if newNck != '0':
+        if (newNck != '0') & (newNck != '5'):
             newNck = ncks[int(newNck) - 1]
-            newNick(newNck, passwd)
-            nickempty = False
+        elif newNck == '5':
+            newNck = input('Enter nick to add: ')
+        elif newNck == '0':
+            nickempty = True
+        if newNck not in nicks:
+            nickId = newNick(newNck, passwd)
             nick = newNck
-            datas[len(datas) - 1][0] = nick
-
+            datas[len(datas) - 1][0] = nickId
+            datas[len(datas) - 1][12] = nick
+        else:
+            for nk in nicksAll:
+                if nk[0] == newNck:
+                    nick = newNck
+                    datas[len(datas) - 1][0] = nk[1]
+                    datas[len(datas) - 1][12] = nick
+        print(nick, wk, rd, mp, mc, sf, sc, ph, pw, cc, sr, lv)
+    else:
+        if len(allPossiblePlayers) > 1:
+            print('More than one such nickname were found in base.')
+            for rec in allPossiblePlayers:
+                print('%s, number %s' % (rec[0], rec[1]))
+            choise = int(input('Enter correct number of variant to pick:'))
+            datas[len(datas) - 1][0] = allPossiblePlayers[choise - 1][1]
+        elif len(allPossiblePlayers) == 1:
+            datas[len(datas) - 1][0] = allPossiblePlayers[0][1]
+nickempty = False
+for dat in datas:
+    if dat[0] == '':
+        nickempty = True
 
 # write to destination base on server if all nicks are recognized
 if not nickempty and not noneflag:

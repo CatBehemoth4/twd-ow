@@ -29,7 +29,7 @@ def putinxl(data):
         col = numbers * 15 + 1
         row = i + 3
 #writing data
-        sheet.cell(row=row, column=col).value = data[i][0]
+        sheet.cell(row=row, column=col).value = data[i][12]
         sheet.cell(row=row, column=col + 1).value = data[i][1]
         sheet.cell(row=row, column=col + 2).value = data[i][2]
         sheet.cell(row=row, column=col + 3).value = data[i][3]

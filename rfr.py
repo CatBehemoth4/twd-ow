@@ -24,9 +24,9 @@ def downToThursday(dt, mode):
 
 def mindate(plr):
     cur, conn = baseconnect(passw)
-    cur.execute('SELECT "Id" FROM "players" WHERE "Name" = \'%s\'' % plr)
-    idUsr = cur.fetchall()[0][0]
-    cur.execute('SELECT * FROM "teams" WHERE "player" = \'%s\'' % idUsr)
+    # cur.execute('SELECT "Id" FROM "players" WHERE "Name" = \'%s\'' % plr)
+    # idUsr = cur.fetchall()[0][0]
+    cur.execute('SELECT * FROM "teams" WHERE "player" = %s' % plr)
     dats = cur.fetchall()[0]
     colmns = [desc[0] for desc in cur.description]
     datstot = list()
@@ -78,7 +78,7 @@ def arq(req):
             dt = downToThursday(dt, True)
         # counting down to nearest thursday (if today is thursday - counting down to previous if time is less than 3 p. m.
             rqstdt = dt.strftime("%Y-%m-%d")
-        # taking player's ids fron server
+        # taking player's ids from server
             cur, conn = baseconnect(passw)
             cur.execute('SELECT "player" FROM "teams" WHERE "%s" = 1' % rqstdt)
             idplrs = cur.fetchall()
@@ -86,12 +86,15 @@ def arq(req):
             cur.execute('SELECT "Id", "Name" FROM "players"')
             nicks = cur.fetchall()
             plrsRet = list()
+            plrsRet0 = list()
         # connecting names with ids
             for num in idplrs:
                 for nk in nicks:
                     if num[0] == nk[0]:
-                        plrsRet.append(nk[1])
-            plrsRet.sort(key=str.casefold)
+                        plrsRet.append([nk[0], nk[1]])
+                        plrsRet0.append(nk[1])
+            plrsRet0.sort(key=str.casefold)
+            plrsRet.append(plrsRet0)
         # making json
             ret = json.dumps(plrsRet)
             conn.close()
@@ -176,12 +179,12 @@ def arq(req):
                 date1 = downToThursday(date1, False)
             else:
                 date1 = downToThursday(date1, False)
-            cur.execute('SELECT "Id" FROM "players" WHERE "Name" = \'%s\'' % nick)
-            plrId = cur.fetchall()[0][0]
+            # cur.execute('SELECT "Id" FROM "players" WHERE "Name" = \'%s\'' % nick)
+            # plrId = cur.fetchall()[0][0]
             firstPoint = None
             date1 = datetime.datetime.strftime(date1, "%Y-%m-%d")
             while firstPoint == None:
-                cur.execute('SELECT "%s" FROM "walkers_killed" WHERE "player" = \'%s\'' % (date1, plrId))
+                cur.execute('SELECT "%s" FROM "walkers_killed" WHERE "player" = %s' % (date1, nick))
                 firstPoint = cur.fetchall()[0][0]
                 if firstPoint == None:
                     date1 = datetime.datetime.strptime(date1, "%Y-%m-%d")
@@ -190,7 +193,7 @@ def arq(req):
             secondPoint = None
             date2 = datetime.datetime.strftime(date2, "%Y-%m-%d")
             while secondPoint == None:
-                cur.execute('SELECT "%s" FROM "walkers_killed" WHERE "player" = \'%s\'' % (date2, plrId))
+                cur.execute('SELECT "%s" FROM "walkers_killed" WHERE "player" = %s' % (date2, nick))
                 secondPoint = cur.fetchall()[0][0]
                 if secondPoint == None:
                     date2 = datetime.datetime.strptime(date2, "%Y-%m-%d")
@@ -198,7 +201,7 @@ def arq(req):
                     date2 = datetime.datetime.strftime(date2, "%Y-%m-%d")
             ret = list()
             for base in BASELIST:
-                cur.execute('SELECT "%s", "%s" FROM "%s" WHERE "player" = %s' % (date1, date2, base, plrId))
+                cur.execute('SELECT "%s", "%s" FROM "%s" WHERE "player" = %s' % (date1, date2, base, nick))
                 dat = cur.fetchall()
                 ret.append(dat[0][1] - dat[0][0])
             ret.append(date1)
