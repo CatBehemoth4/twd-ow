@@ -1,5 +1,8 @@
-pytesseract==0.3.6
-Flask==1.1.2
-psycopg2==2.8.6
-openpyxl==3.0.5
-Pillow==8.1.0
+pytesseract~=0.3.6
+Flask~=1.1.2
+psycopg2~=2.8.6
+openpyxl~=3.0.5
+Pillow~=8.1.0
+
+tkcalendar~=1.6.1
+PySimpleGUI~=4.55.1
