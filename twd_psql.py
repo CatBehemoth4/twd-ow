@@ -125,7 +125,7 @@ def fillTeamOne():
 def groupStat():
     cur, conn = baseConnect(passwd)
     grp = int(input('Enter group Id:'))
-    dat = input('Enter date:')
+    dat = input('Enter date (YYYY-mm-DD):')
     dat2 = datetime.datetime.strptime(dat, '%Y-%m-%d')
     dat1 = dat2 - datetime.timedelta(days=7)
     datPrv = datetime.datetime.strftime(dat1, '%Y-%m-%d')
