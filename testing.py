@@ -16,7 +16,7 @@ grouplayout = [[sg.Combo('Group', key='groups', size=(15, 1), disabled=True), sg
 
 datelayout = [[sg.Input('', key='datdate', size=(12,1), disabled=True),
                sg.CalendarButton('Enter desired date', key='Ddate', disabled=True, format='%Y-%m-%d', target='datdate'),
-               sg.Button('Accept date', key='Accept')],
+               sg.Button('Accept date', key='Accept', disabled=True)],
               [sg.Button('Update base', key='Finalupdate', disabled=True)]]
 
 window = sg.Window('TWD', [passlayout, grouplayout, datelayout])
@@ -50,6 +50,8 @@ while True:
         passwd = ''
         cur.close()
         conn.close()
+        window['groups'].update(disabled=True)
+        window['choosegroup'].update(disabled=True)
         window['loginlbl'].update('Login')
         window['log-in'].update('', visible=True)
         window['loginshow'].update(visible=False)
@@ -59,14 +61,19 @@ while True:
         window['relog'].update(visible=False)
     if event == 'choosegroup':
         grup = values['groups']
-        window['groups'].update(disabled=True)
-        window['choosegroup'].update(disabled=True)
-        window['relog'].update(disabled=True)
-        window['loggingin'].update(disabled=True)
-        dat, nam = recognizeImages(cur, conn)
-        dat = confirmation.showoutputdata(dat)
-        window['datdate'].update(disabled=False)
-        window['Ddate'].update(disabled=False)
+        if grup != '':
+            window.disable_close = True
+            window['groups'].update(disabled=True)
+            window['choosegroup'].update(disabled=True)
+            window['relog'].update(disabled=True)
+            window['loggingin'].update(disabled=True)
+            dat, nam = recognizeImages(cur, conn)
+            dat = confirmation.showoutputdata(dat)
+            window['datdate'].update(disabled=False)
+            window['Ddate'].update(disabled=False)
+            window['Accept'].update(disabled=False)
+        else:
+            sg.popup_ok('Error', 'You must choose a group')
     if event == 'Accept':
         date = values['datdate']
         if date == '':
@@ -75,10 +82,12 @@ while True:
             window['datdate'].update(disabled=True)
             window['Ddate'].update(disabled=True)
             window['Finalupdate'].update(disabled=False)
-            print(date)
     if event == 'Finalupdate':
+        window['Finalupdate'].update(disabled=True)
         grp = grouplist(cur, conn, mode=3)[grup]
         writebase(dat, grp, date, cur, conn)
+        window.disable_close = False
+        window['relog'].update(disabled=False)
     if (event == sg.WIN_CLOSED) or (event == 'Close'):
         break
 
