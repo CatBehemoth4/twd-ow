@@ -1,4 +1,5 @@
 import datetime, confirmation
+import PySimpleGUI as sg
 import PIL
 from PIL import ImageFilter
 from tkinter import *
@@ -7,7 +8,7 @@ from tkinter.simpledialog import askinteger
 from tkcalendar import DateEntry
 import tkinter.ttk as ttk
 import pytesseract
-from putinbase import writebase, newNick, defGroup, getnicks, baseconnect
+from putinbase import writebase, newNick, defGroup, getnicks, BASELIST
 from getpass import getpass
 import os, rfr
 from xlmodule import returnnicks, putinxl
@@ -138,15 +139,13 @@ def unrecnumb(parm, plr, filename):
         # int(input('%s of player %s is not recognized. Enter parameter from file %s: ' % (parm, plr, filename)))
 
 
-def recognizeImages(logIn, windw, grp):
+def recognizeImages(cur, conn):
 
     pytesseract.pytesseract.tesseract_cmd = r'C:\Users\Cat Behemoth\AppData\Local\Tesseract-OCR\tesseract.exe'
-    usr = logIn.name
-    passwd = logIn.passwd
 
 # getting list of correct nicknames
-    print('You have choosen group "%s"' % (defGroup(grp, usr, passwd)))
-    nicksAll = getnicks(usr, passwd)
+#     print('You have choosen group "%s"' % (defGroup(grp, cur, conn)))
+    nicksAll = getnicks(cur, conn)
     nicks = [nk[0] for nk in nicksAll]
     nams = dict()
     for nm in nicksAll:
@@ -263,56 +262,55 @@ def recognizeImages(logIn, windw, grp):
         if wk == None:
             wk = recogNumber((21, 7, 260, 63), imagebig1)
         if wk == None:
-            wk = unrecnumb('"Walkers killed"', nick, fname)
+            wk = confirmation.sggetint(nick, fname, BASELIST[0])
         rd = pytesseract.image_to_string(rdim, lang='twd')
         rd = nospace(rd)
         if rd == None:
             rd = recogNumber((21, 89, 260, 142), imagebig1)
         if rd == None:
-            rd = unrecnumb('"Raiders defeated"', nick, fname)
+            rd = confirmation.sggetint(nick, fname, BASELIST[1])
         mp = pytesseract.image_to_string(mpim, lang='twd')
         mp = nospace(mp)
         if mp == None:
-            mp = unrecnumb('"Missions played"', nick, fname)
+            mp = confirmation.sggetint(nick, fname, BASELIST[2])
         mc = pytesseract.image_to_string(mcim, lang='twd')
         mc = nospace(mc)
         if mc == None:
             mc =  recogNumber((21, 244, 260, 294), imagebig1)
         if mc == None:
-            mc = unrecnumb('"Missions completed"', nick, fname)
+            mc = confirmation.sggetint(nick, fname, BASELIST[3])
         sf = pytesseract.image_to_string(sfim, lang='twd')
         sf = nospace(sf)
         if sf == None:
             recogNumber((21, 323, 260, 376), imagebig1)
         if sf == None:
-            sf = unrecnumb('"Shots fired"', nick, fname)
+            sf = confirmation.sggetint(nick, fname, BASELIST[4])
         sc = pytesseract.image_to_string(scim, lang='twd')
         sc = nospace(sc)
         if sc == None:
             sc = recogNumber((21, 396, 260, 454), imagebig1)
         if sc == None:
-            sc = unrecnumb('"Stashes collected"', nick, fname)
+            sc = confirmation.sggetint(nick, fname, BASELIST[5])
         ph = pytesseract.image_to_string(phim, lang='twd')
         ph = nospace(ph)
         if ph == None:
-            ph = unrecnumb('"Total power heroes"', nick, fname)
+            ph = confirmation.sggetint(nick, fname, BASELIST[6])
         pw = pytesseract.image_to_string(pwim, lang='twd')
         pw = nospace(pw)
         if pw == None:
-            pw = unrecnumb('"Total power weapons"', nick, fname)
-            pwim.save('pw.jpg')
+            pw = confirmation.sggetint(nick, fname, BASELIST[7])
         cc = pytesseract.image_to_string(ccim, lang='twd')
         cc = nospace(cc)
         if cc == None:
-            cc = unrecnumb('"Cards collected"', nick, fname)
+            cc = confirmation.sggetint(nick, fname, BASELIST[8])
         sr = pytesseract.image_to_string(srim, lang='twd')
         sr = nospace(sr)
         if sr == None:
-            sr = unrecnumb('"Survivors rescued"', nick, fname)
+            sr = confirmation.sggetint(nick, fname, BASELIST[9])
         try:
             lv = int(pytesseract.image_to_string(lvim))
         except:
-            lv = unrecnumb('"Level"', nick, fname)
+            lv = confirmation.sggetint(nick, fname, BASELIST[10])
         datas.append([nick, wk, rd, mp, mc, sf, sc, ph, pw, cc, sr, lv, nick])
         if None in datas[len(datas) - 1]:
             noneflag = True
@@ -320,9 +318,9 @@ def recognizeImages(logIn, windw, grp):
         print(nick, wk, rd, mp, mc, sf, sc, ph, pw, cc, sr, lv)
         if nick == '':
             ncks = (nicke1, nickr1, nickt1, nickg1)
-            newNck = confirmation.namechoice(ncks)
+            newNck = confirmation.confsg(ncks)
             if newNck not in nicks:
-                nickId = newNick(newNck, usr, passwd)
+                nickId = newNick(newNck, cur, conn)
                 nick = newNck
                 datas[len(datas) - 1][0] = nickId
                 datas[len(datas) - 1][12] = nick
@@ -335,11 +333,7 @@ def recognizeImages(logIn, windw, grp):
             print(nick, wk, rd, mp, mc, sf, sc, ph, pw, cc, sr, lv)
         else:
             if len(allPossiblePlayers) > 1:
-                print('More than one such nickname were found in base.')
-                for rec in allPossiblePlayers:
-                    print('%s, number %s' % (rec[0], rec[1]))
-                choise = int(input('Enter correct number of variant to pick:'))
-                datas[len(datas) - 1][0] = allPossiblePlayers[choise - 1][1]
+                datas[len(datas) - 1][0] = confirmation.sgchooseplayer(allPossiblePlayers)
             elif len(allPossiblePlayers) == 1:
                 datas[len(datas) - 1][0] = allPossiblePlayers[0][1]
     nickempty = False
@@ -359,236 +353,236 @@ def recognizeImages(logIn, windw, grp):
 #     putinxl(datas)
     return datas, nams
 
-logIn = login()
-plars = list()
-parms = ['wk', 'rd', 'mp', 'mc', 'sf', 'sc', 'tph', 'tpw', 'cc', 'sr', 'l']
-
-windw = Tk()
-windw.geometry('1800x1000')
-
-def auth():
-
-    authWin = Tk()
-    authWin.title = 'Authorization'
-    authWin.geometry('350x350')
-    authWin['bg'] = 'yellow'
-    authWin.resizable(False, False)
-    user = StringVar()
-    password = StringVar()
-
-
-    def clickAuth():
-        logIn.name = nameTxt.get()
-        logIn.passwd = passwTxt.get()
-        authWin.destroy()
-
-
-    nameLabel = Label(authWin, text='Login', justify=CENTER)
-    nameLabel.pack()
-
-    nameTxt = Entry(authWin, textvariable=user)
-    nameTxt.pack()
-
-    passwLabel = Label(authWin, text='Password', justify=CENTER)
-    passwLabel.pack()
-
-    passwTxt = Entry(authWin, textvariable=password, show='*')
-    passwTxt.pack()
-
-    butAuth = Button(authWin, text='Login', command=clickAuth)
-    butAuth.pack()
-
-    authWin.mainloop()
-
-
-def recognize():
-    inputGroup['state'] = DISABLED
-    inputGroup.update()
-
-    def basePut():
-        dat = dateEntr.get_date()
-        dat = dat.strftime("%Y-%m-%d")
-        dts = list()
-        for i in range(totPl):
-            pl = list()
-            pl.append(int(globals()['LabelId' + str(i)]['text']))
-            pl.append(int(globals()['wkVar' + str(i)].get()))
-            pl.append(int(globals()['rdVar' + str(i)].get()))
-            pl.append(int(globals()['mpVar' + str(i)].get()))
-            pl.append(int(globals()['mcVar' + str(i)].get()))
-            pl.append(int(globals()['sfVar' + str(i)].get()))
-            pl.append(int(globals()['scVar' + str(i)].get()))
-            pl.append(int(globals()['tphVar' + str(i)].get()))
-            pl.append(int(globals()['tpwVar' + str(i)].get()))
-            pl.append(int(globals()['ccVar' + str(i)].get()))
-            pl.append(int(globals()['srVar' + str(i)].get()))
-            pl.append(int(globals()['lVar' + str(i)].get()))
-            pl.append(globals()['namVar' + str(i)].get())
-            dts.append(pl)
-            globals()['LabelId' + str(i)].destroy()
-            globals()['LabelName' + str(i)].destroy()
-            globals()['LabelWk' + str(i)].destroy()
-            globals()['LabelRd' + str(i)].destroy()
-            globals()['LabelMp' + str(i)].destroy()
-            globals()['LabelMc' + str(i)].destroy()
-            globals()['LabelSf' + str(i)].destroy()
-            globals()['LabelSc' + str(i)].destroy()
-            globals()['LabelTph' + str(i)].destroy()
-            globals()['LabelTpw' + str(i)].destroy()
-            globals()['LabelCc' + str(i)].destroy()
-            globals()['LabelSr' + str(i)].destroy()
-            globals()['LabelL' + str(i)].destroy()
-            dateEntr.destroy()
-            btnPutInBase.destroy()
-            inputGroup['state'] = NORMAL
-            globals()['labCapId'].destroy()
-            globals()['labCapNam'].destroy()
-            globals()['labCapWk'].destroy()
-            globals()['labCapRd'].destroy()
-            globals()['labCapMp'].destroy()
-            globals()['labCapMc'].destroy()
-            globals()['labCapSf'].destroy()
-            globals()['labCapSc'].destroy()
-            globals()['labCapTph'].destroy()
-            globals()['labCapTpw'].destroy()
-            globals()['labCapCc'].destroy()
-            globals()['labCapSr'].destroy()
-            globals()['labCapLvl'].destroy()
-        writebase(dts, grp.get(), dat, logIn.name, logIn.passwd)
-        dts.clear()
-        grpNameLabel['text'] = ''
-        grpNameLabel.update()
-        inputGroup['state'] = NORMAL
-        inputGroup.update()
-
-    gr = grp.get()
-    try:
-        gr = int(gr)
-        grNam = defGroup(gr, logIn.name, logIn.passwd)
-        grpNameLabel = Label(windw, text=grNam)
-        grpNameLabel.grid(row=1, column=5)
-        grpNameLabel.update()
-    except:
-        grNam = None
-    if not grNam:
-        messagebox.showinfo('Not exist','Group with id "' + str(gr) + '" does not exist!')
-        inputGroup['state'] = NORMAL
-        inputGroup.update()
-    else:
-        plrs, nams = recognizeImages(logIn, windw, gr)
-        drwCap(windw)
-        plr = stat()
-        global totPl
-        totPl = len(plrs)
-        plars.clear()
-        for i in range(len(plrs)):
-            plr.id = plrs[i][0]
-            plr.name = plrs[i][12]
-            plr.wk = plrs[i][1]
-            plr.rd = plrs[i][2]
-            plr.mp = plrs[i][3]
-            plr.mc = plrs[i][4]
-            plr.sf = plrs[i][5]
-            plr.sc = plrs[i][6]
-            plr.tph = plrs[i][7]
-            plr.tpw = plrs[i][8]
-            plr.cc = plrs[i][9]
-            plr.sr = plrs[i][10]
-            plr.l = plrs[i][11]
-            plars.append(plr)
-            labName = 'LabelId' + str(i)
-            globals()[labName] = Label(windw, text=str(plars[i].id))
-            globals()[labName].grid(row=7 + i, column=0)
-            edName = 'LabelName' + str(i)
-            namTxtVar = 'namVar' + str(i)
-            globals()[namTxtVar] = StringVar()
-            globals()[edName] = Entry(windw, textvariable=globals()[namTxtVar])
-            globals()[namTxtVar].set(plars[i].name)
-            globals()[edName].grid(row=7 + i, column=1)
-            wkName = 'LabelWk' + str(i)
-            wkTxtVar = 'wkVar' + str(i)
-            globals()[wkTxtVar] = StringVar()
-            globals()[wkName] = Entry(windw, textvariable=globals()[wkTxtVar], justify=CENTER)
-            globals()[wkTxtVar].set(plars[i].wk)
-            globals()[wkName].grid(row=7 + i, column=2)
-            rdName = 'LabelRd' + str(i)
-            rdTxtVar = 'rdVar' + str(i)
-            globals()[rdTxtVar] = StringVar()
-            globals()[rdName] = Entry(windw, textvariable=globals()[rdTxtVar], justify=CENTER)
-            globals()[rdTxtVar].set(plars[i].rd)
-            globals()[rdName].grid(row=7 + i, column=3)
-            mpName = 'LabelMp' + str(i)
-            mpTxtVar = 'mpVar' + str(i)
-            globals()[mpTxtVar] = StringVar()
-            globals()[mpName] = Entry(windw, textvariable=globals()[mpTxtVar], justify=CENTER)
-            globals()[mpTxtVar].set(plars[i].mp)
-            globals()[mpName].grid(row=7 + i, column=4)
-            mcName = 'LabelMc' + str(i)
-            mcTxtVar = 'mcVar' + str(i)
-            globals()[mcTxtVar] = StringVar()
-            globals()[mcName] = Entry(windw, textvariable=globals()[mcTxtVar], justify=CENTER)
-            globals()[mcTxtVar].set(plars[i].mc)
-            globals()[mcName].grid(row=7 + i, column=5)
-            sfName = 'LabelSf' + str(i)
-            sfTxtVar = 'sfVar' + str(i)
-            globals()[sfTxtVar] = StringVar()
-            globals()[sfName] = Entry(windw, textvariable=globals()[sfTxtVar], justify=CENTER)
-            globals()[sfTxtVar].set(plars[i].sf)
-            globals()[sfName].grid(row=7 + i, column=6)
-            scName = 'LabelSc' + str(i)
-            scTxtVar = 'scVar' + str(i)
-            globals()[scTxtVar] = StringVar()
-            globals()[scName] = Entry(windw, textvariable=globals()[scTxtVar], justify=CENTER)
-            globals()[scTxtVar].set(plars[i].sc)
-            globals()[scName].grid(row=7 + i, column=7)
-            tphName = 'LabelTph' + str(i)
-            tphTxtVar = 'tphVar' + str(i)
-            globals()[tphTxtVar] = StringVar()
-            globals()[tphName] = Entry(windw, textvariable=globals()[tphTxtVar], justify=CENTER)
-            globals()[tphTxtVar].set(plars[i].tph)
-            globals()[tphName].grid(row=7 + i, column=8)
-            tpwName = 'LabelTpw' + str(i)
-            tpwTxtVar = 'tpwVar' + str(i)
-            globals()[tpwTxtVar] = StringVar()
-            globals()[tpwName] = Entry(windw, textvariable=globals()[tpwTxtVar], justify=CENTER)
-            globals()[tpwTxtVar].set(plars[i].tpw)
-            globals()[tpwName].grid(row=7 + i, column=9)
-            ccName = 'LabelCc' + str(i)
-            ccTxtVar = 'ccVar' + str(i)
-            globals()[ccTxtVar] = StringVar()
-            globals()[ccName] = Entry(windw, textvariable=globals()[ccTxtVar], justify=CENTER)
-            globals()[ccTxtVar].set(plars[i].cc)
-            globals()[ccName].grid(row=7 + i, column=10)
-            srName = 'LabelSr' + str(i)
-            srTxtVar = 'srVar' + str(i)
-            globals()[srTxtVar] = StringVar()
-            globals()[srName] = Entry(windw, textvariable=globals()[srTxtVar], justify=CENTER)
-            globals()[srTxtVar].set(plars[i].sr)
-            globals()[srName].grid(row=7 + i, column=11)
-            lName = 'LabelL' + str(i)
-            lTxtVar = 'lVar' + str(i)
-            globals()[lTxtVar] = StringVar()
-            globals()[lName] = Entry(windw, textvariable=globals()[lTxtVar], justify=CENTER)
-            globals()[lTxtVar].set(plars[i].l)
-            globals()[lName].grid(row=7 + i, column=12)
-        # global dateEntr
-        dateEntr = DateEntry(windw)
-        dateEntr.set_date(datetime.date.today())
-        dateEntr.grid(column= 7, row= 8 + len(plrs))
-        btnPutInBase = Button(windw, text='To Base', command= basePut)
-        btnPutInBase.grid(column= 8, row= 8 + len(plrs))
-
-# frmHigh = tkinter.ttk.Frame(windw, padding= 20)
-# frmHigh.pack()
-grp = StringVar()
-buttonLog = Button(windw, text= 'Login', command= auth)
-buttonLog.grid(row=0, column=7)
-inputGroup = Entry(windw, textvariable= grp)
-labGroup = Label(windw, text='Group number')
-inputGroup.grid(row=1, column=3)
-labGroup.grid(row=1, column=0, columnspan=2)
-button = Button(windw, text= 'Input images', command= recognize)
-button.grid(row=1, column=7)
-frmShowAdds = Frame(windw, highlightbackground= 'black', highlightthickness = 2)
-frmShowAdds.grid(row=3, column=0)
-windw.mainloop()
+# logIn = login()
+# plars = list()
+# parms = ['wk', 'rd', 'mp', 'mc', 'sf', 'sc', 'tph', 'tpw', 'cc', 'sr', 'l']
+#
+# windw = Tk()
+# windw.geometry('1800x1000')
+#
+# def auth():
+#
+#     authWin = Tk()
+#     authWin.title = 'Authorization'
+#     authWin.geometry('350x350')
+#     authWin['bg'] = 'yellow'
+#     authWin.resizable(False, False)
+#     user = StringVar()
+#     password = StringVar()
+#
+#
+#     def clickAuth():
+#         logIn.name = nameTxt.get()
+#         logIn.passwd = passwTxt.get()
+#         authWin.destroy()
+#
+#
+#     nameLabel = Label(authWin, text='Login', justify=CENTER)
+#     nameLabel.pack()
+#
+#     nameTxt = Entry(authWin, textvariable=user)
+#     nameTxt.pack()
+#
+#     passwLabel = Label(authWin, text='Password', justify=CENTER)
+#     passwLabel.pack()
+#
+#     passwTxt = Entry(authWin, textvariable=password, show='*')
+#     passwTxt.pack()
+#
+#     butAuth = Button(authWin, text='Login', command=clickAuth)
+#     butAuth.pack()
+#
+#     authWin.mainloop()
+#
+#
+# def recognize():
+#     inputGroup['state'] = DISABLED
+#     inputGroup.update()
+#
+#     def basePut():
+#         dat = dateEntr.get_date()
+#         dat = dat.strftime("%Y-%m-%d")
+#         dts = list()
+#         for i in range(totPl):
+#             pl = list()
+#             pl.append(int(globals()['LabelId' + str(i)]['text']))
+#             pl.append(int(globals()['wkVar' + str(i)].get()))
+#             pl.append(int(globals()['rdVar' + str(i)].get()))
+#             pl.append(int(globals()['mpVar' + str(i)].get()))
+#             pl.append(int(globals()['mcVar' + str(i)].get()))
+#             pl.append(int(globals()['sfVar' + str(i)].get()))
+#             pl.append(int(globals()['scVar' + str(i)].get()))
+#             pl.append(int(globals()['tphVar' + str(i)].get()))
+#             pl.append(int(globals()['tpwVar' + str(i)].get()))
+#             pl.append(int(globals()['ccVar' + str(i)].get()))
+#             pl.append(int(globals()['srVar' + str(i)].get()))
+#             pl.append(int(globals()['lVar' + str(i)].get()))
+#             pl.append(globals()['namVar' + str(i)].get())
+#             dts.append(pl)
+#             globals()['LabelId' + str(i)].destroy()
+#             globals()['LabelName' + str(i)].destroy()
+#             globals()['LabelWk' + str(i)].destroy()
+#             globals()['LabelRd' + str(i)].destroy()
+#             globals()['LabelMp' + str(i)].destroy()
+#             globals()['LabelMc' + str(i)].destroy()
+#             globals()['LabelSf' + str(i)].destroy()
+#             globals()['LabelSc' + str(i)].destroy()
+#             globals()['LabelTph' + str(i)].destroy()
+#             globals()['LabelTpw' + str(i)].destroy()
+#             globals()['LabelCc' + str(i)].destroy()
+#             globals()['LabelSr' + str(i)].destroy()
+#             globals()['LabelL' + str(i)].destroy()
+#             dateEntr.destroy()
+#             btnPutInBase.destroy()
+#             inputGroup['state'] = NORMAL
+#             globals()['labCapId'].destroy()
+#             globals()['labCapNam'].destroy()
+#             globals()['labCapWk'].destroy()
+#             globals()['labCapRd'].destroy()
+#             globals()['labCapMp'].destroy()
+#             globals()['labCapMc'].destroy()
+#             globals()['labCapSf'].destroy()
+#             globals()['labCapSc'].destroy()
+#             globals()['labCapTph'].destroy()
+#             globals()['labCapTpw'].destroy()
+#             globals()['labCapCc'].destroy()
+#             globals()['labCapSr'].destroy()
+#             globals()['labCapLvl'].destroy()
+#         writebase(dts, grp.get(), dat, logIn.name, logIn.passwd)
+#         dts.clear()
+#         grpNameLabel['text'] = ''
+#         grpNameLabel.update()
+#         inputGroup['state'] = NORMAL
+#         inputGroup.update()
+#
+#     gr = grp.get()
+#     try:
+#         gr = int(gr)
+#         grNam = defGroup(gr, logIn.name, logIn.passwd)
+#         grpNameLabel = Label(windw, text=grNam)
+#         grpNameLabel.grid(row=1, column=5)
+#         grpNameLabel.update()
+#     except:
+#         grNam = None
+#     if not grNam:
+#         messagebox.showinfo('Not exist','Group with id "' + str(gr) + '" does not exist!')
+#         inputGroup['state'] = NORMAL
+#         inputGroup.update()
+#     else:
+#         plrs, nams = recognizeImages(logIn.name, logIn.passwd, windw, gr)
+#         drwCap(windw)
+#         plr = stat()
+#         global totPl
+#         totPl = len(plrs)
+#         plars.clear()
+#         for i in range(len(plrs)):
+#             plr.id = plrs[i][0]
+#             plr.name = plrs[i][12]
+#             plr.wk = plrs[i][1]
+#             plr.rd = plrs[i][2]
+#             plr.mp = plrs[i][3]
+#             plr.mc = plrs[i][4]
+#             plr.sf = plrs[i][5]
+#             plr.sc = plrs[i][6]
+#             plr.tph = plrs[i][7]
+#             plr.tpw = plrs[i][8]
+#             plr.cc = plrs[i][9]
+#             plr.sr = plrs[i][10]
+#             plr.l = plrs[i][11]
+#             plars.append(plr)
+#             labName = 'LabelId' + str(i)
+#             globals()[labName] = Label(windw, text=str(plars[i].id))
+#             globals()[labName].grid(row=7 + i, column=0)
+#             edName = 'LabelName' + str(i)
+#             namTxtVar = 'namVar' + str(i)
+#             globals()[namTxtVar] = StringVar()
+#             globals()[edName] = Entry(windw, textvariable=globals()[namTxtVar])
+#             globals()[namTxtVar].set(plars[i].name)
+#             globals()[edName].grid(row=7 + i, column=1)
+#             wkName = 'LabelWk' + str(i)
+#             wkTxtVar = 'wkVar' + str(i)
+#             globals()[wkTxtVar] = StringVar()
+#             globals()[wkName] = Entry(windw, textvariable=globals()[wkTxtVar], justify=CENTER)
+#             globals()[wkTxtVar].set(plars[i].wk)
+#             globals()[wkName].grid(row=7 + i, column=2)
+#             rdName = 'LabelRd' + str(i)
+#             rdTxtVar = 'rdVar' + str(i)
+#             globals()[rdTxtVar] = StringVar()
+#             globals()[rdName] = Entry(windw, textvariable=globals()[rdTxtVar], justify=CENTER)
+#             globals()[rdTxtVar].set(plars[i].rd)
+#             globals()[rdName].grid(row=7 + i, column=3)
+#             mpName = 'LabelMp' + str(i)
+#             mpTxtVar = 'mpVar' + str(i)
+#             globals()[mpTxtVar] = StringVar()
+#             globals()[mpName] = Entry(windw, textvariable=globals()[mpTxtVar], justify=CENTER)
+#             globals()[mpTxtVar].set(plars[i].mp)
+#             globals()[mpName].grid(row=7 + i, column=4)
+#             mcName = 'LabelMc' + str(i)
+#             mcTxtVar = 'mcVar' + str(i)
+#             globals()[mcTxtVar] = StringVar()
+#             globals()[mcName] = Entry(windw, textvariable=globals()[mcTxtVar], justify=CENTER)
+#             globals()[mcTxtVar].set(plars[i].mc)
+#             globals()[mcName].grid(row=7 + i, column=5)
+#             sfName = 'LabelSf' + str(i)
+#             sfTxtVar = 'sfVar' + str(i)
+#             globals()[sfTxtVar] = StringVar()
+#             globals()[sfName] = Entry(windw, textvariable=globals()[sfTxtVar], justify=CENTER)
+#             globals()[sfTxtVar].set(plars[i].sf)
+#             globals()[sfName].grid(row=7 + i, column=6)
+#             scName = 'LabelSc' + str(i)
+#             scTxtVar = 'scVar' + str(i)
+#             globals()[scTxtVar] = StringVar()
+#             globals()[scName] = Entry(windw, textvariable=globals()[scTxtVar], justify=CENTER)
+#             globals()[scTxtVar].set(plars[i].sc)
+#             globals()[scName].grid(row=7 + i, column=7)
+#             tphName = 'LabelTph' + str(i)
+#             tphTxtVar = 'tphVar' + str(i)
+#             globals()[tphTxtVar] = StringVar()
+#             globals()[tphName] = Entry(windw, textvariable=globals()[tphTxtVar], justify=CENTER)
+#             globals()[tphTxtVar].set(plars[i].tph)
+#             globals()[tphName].grid(row=7 + i, column=8)
+#             tpwName = 'LabelTpw' + str(i)
+#             tpwTxtVar = 'tpwVar' + str(i)
+#             globals()[tpwTxtVar] = StringVar()
+#             globals()[tpwName] = Entry(windw, textvariable=globals()[tpwTxtVar], justify=CENTER)
+#             globals()[tpwTxtVar].set(plars[i].tpw)
+#             globals()[tpwName].grid(row=7 + i, column=9)
+#             ccName = 'LabelCc' + str(i)
+#             ccTxtVar = 'ccVar' + str(i)
+#             globals()[ccTxtVar] = StringVar()
+#             globals()[ccName] = Entry(windw, textvariable=globals()[ccTxtVar], justify=CENTER)
+#             globals()[ccTxtVar].set(plars[i].cc)
+#             globals()[ccName].grid(row=7 + i, column=10)
+#             srName = 'LabelSr' + str(i)
+#             srTxtVar = 'srVar' + str(i)
+#             globals()[srTxtVar] = StringVar()
+#             globals()[srName] = Entry(windw, textvariable=globals()[srTxtVar], justify=CENTER)
+#             globals()[srTxtVar].set(plars[i].sr)
+#             globals()[srName].grid(row=7 + i, column=11)
+#             lName = 'LabelL' + str(i)
+#             lTxtVar = 'lVar' + str(i)
+#             globals()[lTxtVar] = StringVar()
+#             globals()[lName] = Entry(windw, textvariable=globals()[lTxtVar], justify=CENTER)
+#             globals()[lTxtVar].set(plars[i].l)
+#             globals()[lName].grid(row=7 + i, column=12)
+#         # global dateEntr
+#         dateEntr = DateEntry(windw)
+#         dateEntr.set_date(datetime.date.today())
+#         dateEntr.grid(column= 7, row= 8 + len(plrs))
+#         btnPutInBase = Button(windw, text='To Base', command= basePut)
+#         btnPutInBase.grid(column= 8, row= 8 + len(plrs))
+#
+# # frmHigh = tkinter.ttk.Frame(windw, padding= 20)
+# # frmHigh.pack()
+# grp = StringVar()
+# buttonLog = Button(windw, text= 'Login', command= auth)
+# buttonLog.grid(row=0, column=7)
+# inputGroup = Entry(windw, textvariable= grp)
+# labGroup = Label(windw, text='Group number')
+# inputGroup.grid(row=1, column=3)
+# labGroup.grid(row=1, column=0, columnspan=2)
+# button = Button(windw, text= 'Input images', command= recognize)
+# button.grid(row=1, column=7)
+# frmShowAdds = Frame(windw, highlightbackground= 'black', highlightthickness = 2)
+# frmShowAdds.grid(row=3, column=0)
+# windw.mainloop()

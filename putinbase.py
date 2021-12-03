@@ -28,6 +28,11 @@ def grouplist(cur, conn, mode=0):
         for row in reslt:
             res.append(str(row[0]) + ' ' + row[1])
         return res
+    elif mode == 3:
+        res = dict()
+        for row in reslt:
+            res[row[1]] = row[0]
+        return res
     res = list()
     for row in reslt:
         res.append(row[1])
@@ -70,8 +75,7 @@ def chkdt(dat):
     return datmonthcheck(int(dat[8:10]), int(dat[5:7]), int(dat[:4]))
 
 
-def getnicks(user, passwd):
-    cursor, connection = baseconnect(user, passwd)
+def getnicks(cursor, connection):
     cursor.execute('SELECT "Name", "Id" FROM "players"')
     intmd = cursor.fetchall()
     nicks = list()
@@ -82,29 +86,7 @@ def getnicks(user, passwd):
 
 
 
-def writebase(datas, grp, dat, user, passwd):
-    # connect to base
-    # passwd = getpass("Enter password:", )
-    cursor, connection = baseconnect(user, passwd)
-
-    # i = input('Enter "1" for current date or "2" for custom: ')
-    # # getting current date
-    # flg = True
-    # while flg:
-    #     if i == '1':
-    #         nowmoment = datetime.datetime.today()
-    #         dat = nowmoment.strftime("%Y-%m-%d")
-    #         flg = False
-    #     elif i == '2':
-    #         flg1 = False
-    #         while not flg1:
-    #             dat = input('Enter date in format "YYYY-MM-DD": ')
-    #             flg1 = chkdt(dat)
-    #             if not flg1:
-    #                 print('Incorrect Date, try  again.')
-    #         flg = False
-    #     else:
-    #         print('Incorrect input. "1" or "2" needed.')
+def writebase(datas, grp, dat, cursor, connection):
 
     # add fields for current date to table
     for base in BASELIST:
@@ -141,8 +123,6 @@ def writebase(datas, grp, dat, user, passwd):
         print('commited')
     else:
         print('rejected')
-    cursor.close()
-    connection.close()
 
 
 def datemove(passwd):
@@ -198,8 +178,7 @@ def deletecolumn(passwd):
     connection.close()
 
 
-def newNick(nick, user, passwd):
-    cursor, connection = baseconnect(user, passwd)
+def newNick(nick, cursor, connection):
     cursor.execute('SELECT "Id" FROM "players"')
     numbers = cursor.fetchall()
     numbers = [num[0] for num in numbers]
@@ -207,7 +186,6 @@ def newNick(nick, user, passwd):
     nickId = numbers[0] + 1
     cursor.execute('INSERT INTO "players" ("Id", "Name") VALUES (%s, \'%s\')' % (nickId, nick))
     connection.commit()
-    connection.close()
     return nickId
 
 
@@ -236,12 +214,10 @@ def delPlr(nick, usr, passwd):
     connection.close()
 
 
-def defGroup(number, user, passwd):
-    cur, conn = baseconnect(user, passwd)
+def defGroup(number, cur, conn):
     try:
         cur.execute('SELECT "Name" FROM "Groups" WHERE "Id" = %s' % (number))
         result = cur.fetchall()[0][0]
     except:
         result = None
-    conn.close()
     return result
