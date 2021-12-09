@@ -141,7 +141,7 @@ def unrecnumb(parm, plr, filename):
 
 def recognizeImages(cur, conn):
 
-    pytesseract.pytesseract.tesseract_cmd = r'C:\Users\Cat Behemoth\AppData\Local\Tesseract-OCR\tesseract.exe'
+    pytesseract.pytesseract.tesseract_cmd = r'C:\Users\CatBehem\AppData\Local\Tesseract-OCR\tesseract.exe'
 
 # getting list of correct nicknames
 #     print('You have choosen group "%s"' % (defGroup(grp, cur, conn)))

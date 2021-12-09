@@ -3,7 +3,7 @@ import openpyxl, openpyxl.utils, openpyxl.styles
 
 #getting the list of possible nicks
 def returnnicks():
-    fname = r'C:\Users\Cat Behemoth\Documents\wrks\walkdead\cards.xlsx'
+    fname = r'C:\Users\CatBehem\Documents\wrks\walkdead\cards.xlsx'
     wb = openpyxl.load_workbook(fname)
     sheet = wb.get_sheet_by_name('nicks')
     nicks = list()
@@ -18,7 +18,7 @@ def returnnicks():
 
 def putinxl(data):
 #main file location
-    fname = r'C:\Users\Cat Behemoth\Documents\wrks\walkdead\cards.xlsx'
+    fname = r'C:\Users\CatBehem\Documents\wrks\walkdead\cards.xlsx'
     wb = openpyxl.load_workbook(filename=fname)
     sheet = wb.get_sheet_by_name('Run, Forest, Run')
 #getting number of previous inpuys
@@ -83,7 +83,7 @@ def putinxl(data):
 
 def putinxlext(data):
     # main file location
-    fname = r'C:\Users\Cat Behemoth\Documents\wrks\walkdead\cards.xlsx'
+    fname = r'C:\Users\CatBehem\Documents\wrks\walkdead\cards.xlsx'
     wb = openpyxl.load_workbook(filename=fname)
     sheet = wb.get_sheet_by_name('other')
     # initial row

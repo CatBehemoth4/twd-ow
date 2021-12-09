@@ -88,6 +88,9 @@ while True:
         writebase(dat, grp, date, cur, conn)
         window.disable_close = False
         window['relog'].update(disabled=False)
+        window['choosegroup'].update(disabled=False)
+        window['groups'].update(disabled=False)
+        window['Accept'].update(disabled=True)
     if (event == sg.WIN_CLOSED) or (event == 'Close'):
         break
 
