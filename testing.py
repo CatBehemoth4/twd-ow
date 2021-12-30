@@ -62,10 +62,10 @@ while True:
     if event == 'choosegroup':
         grup = values['groups']
         if grup != '':
+            window['relog'].update(disabled=True)
             window.disable_close = True
             window['groups'].update(disabled=True)
             window['choosegroup'].update(disabled=True)
-            window['relog'].update(disabled=True)
             window['loggingin'].update(disabled=True)
             dat, nam = recognizeImages(cur, conn)
             dat = confirmation.showoutputdata(dat)

@@ -58,13 +58,36 @@ def namechoice(nicks):
     return q.retr
 
 
-def confsg(nicks):
+def playerFromBase(plrs):
     sg.theme('Tan')
-    layout = [[sg.Radio(nicks[0], '1', default=True)],
+    plrs.sort()
+    layPlrs = [[sg.Listbox(plrs, size=(40, 25))],
+               [sg.Button('Submit', key='Submit')]]
+    plrChoise = sg.Window('Choose player', layPlrs, disable_close=True)
+    while True:
+        events, values = plrChoise.read()
+        if events == 'Submit':
+            plr = values[0]
+            if len(plr) == 0:
+                sg.popup_ok('Error!', 'You should choose somebody.')
+            else:
+                plr = plr[0]
+                break
+        if events == sg.WIN_CLOSED:
+            pass
+    plrChoise.close()
+    return plr
+
+
+def confsg(nicks, fname, plrs):
+    sg.theme('Tan')
+    layout = [[[sg.Text('Choose right nick. Filename - %s' % (fname))],
+             [sg.Radio(nicks[0], '1', default=True)],
              [sg.Radio(nicks[1], '1')],
              [sg.Radio(nicks[2], '1')],
              [sg.Radio(nicks[3], '1')],
-             [sg.Radio('', '1'), sg.InputText(key='custnick', size=(14,1))],
+             [sg.Radio('Custom', '1'), sg.InputText(key='custnick', size=(14,1))],
+             [sg.Radio('Choose from base', '1')]],
              [sg.Button('Submit', key='Submit')]]
     chnickwin = sg.Window('Choose nick', layout, disable_close=True)
     while True:
@@ -79,8 +102,11 @@ def confsg(nicks):
                 nick = nicks[2]
             elif values[1]:
                 nick = nicks[1]
-            else:
+            elif values[0]:
                 nick = nicks[0]
+            else:
+                nick = playerFromBase(plrs)
+                print(nick)
             if nick == '':
                 sg.popup_ok('Error', 'You must enter non-empty nick.')
                 finish = False

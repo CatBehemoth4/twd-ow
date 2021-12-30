@@ -318,7 +318,7 @@ def recognizeImages(cur, conn):
         print(nick, wk, rd, mp, mc, sf, sc, ph, pw, cc, sr, lv)
         if nick == '':
             ncks = (nicke1, nickr1, nickt1, nickg1)
-            newNck = confirmation.confsg(ncks)
+            newNck = confirmation.confsg(ncks, fname, nicks)
             if newNck not in nicks:
                 nickId = newNick(newNck, cur, conn)
                 nick = newNck
@@ -333,7 +333,7 @@ def recognizeImages(cur, conn):
             print(nick, wk, rd, mp, mc, sf, sc, ph, pw, cc, sr, lv)
         else:
             if len(allPossiblePlayers) > 1:
-                datas[len(datas) - 1][0] = confirmation.sgchooseplayer(allPossiblePlayers)
+                datas[len(datas) - 1][0] = confirmation.sgchooseplayer(allPossiblePlayers, fname)
             elif len(allPossiblePlayers) == 1:
                 datas[len(datas) - 1][0] = allPossiblePlayers[0][1]
     nickempty = False
