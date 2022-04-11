@@ -333,7 +333,7 @@ def recognizeImages(cur, conn):
             print(nick, wk, rd, mp, mc, sf, sc, ph, pw, cc, sr, lv)
         else:
             if len(allPossiblePlayers) > 1:
-                datas[len(datas) - 1][0] = confirmation.sgchooseplayer(allPossiblePlayers, fname)
+                datas[len(datas) - 1][0] = confirmation.sgchooseplayer(allPossiblePlayers)
             elif len(allPossiblePlayers) == 1:
                 datas[len(datas) - 1][0] = allPossiblePlayers[0][1]
     nickempty = False

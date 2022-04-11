@@ -13,7 +13,7 @@ global flag
 
 
 def baseconnect(usr, passwd):
-    connection = psycopg2.connect(dbname="TWD", user=usr, password=passwd, host="188.120.240.167")
+    connection = psycopg2.connect(dbname="TWD", user=usr, password=passwd, host="188.120.240.167", port=17344)
     cursor = connection.cursor()
     return cursor, connection
 
